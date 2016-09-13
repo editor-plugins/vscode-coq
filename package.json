@@ -1,0 +1,81 @@
+{
+  "name": "Coq",
+  "description": "Coq Support for Visual Studio Code",
+  "version": "0.1.0",
+  "publisher": "zjhmale",
+  "engines": {
+    "vscode": "^0.10.1"
+  },
+  "icon": "images/coq.png",
+  "keywords": [
+    "language",
+    "coq",
+    "highlight",
+    "syntax",
+    "snippets"
+  ],
+  "license": "BSD",
+  "homepage": "https://github.com/zjhmale/vscode-coq",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zjhmale/vscode-coq.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zjhmale/vscode-coq/issues",
+    "email": "zjhmale@gmail.com"
+  },
+  "categories": [
+    "Languages",
+    "Snippets"
+  ],
+  "activationEvents": [
+    "onLanguage:coq"
+  ],
+  "main": "./src/extension",
+  "contributes": {
+    "languages": [{
+      "id": "coq",
+      "aliases": [
+        "Coq",
+        "coq"
+      ],
+      "extensions": [
+        ".v"
+      ],
+      "configuration": "./configs/coq.json"
+    }],
+    "grammars": [{
+      "language": "coq",
+      "scopeName": "source.coq",
+      "path": "./syntaxes/coq.tmLanguage"
+    }],
+    "commands": [{
+      "command": "coq.next",
+      "title": "Coq: next"
+    }],
+    "keybindings": [{
+      "key": "shift+ctrl+n",
+      "mac": "shift+cmd+n",
+      "command": "coq.next"
+    }],
+    "snippets": [{
+      "language": "coq",
+      "path": "./snippets/coq.json"
+    }]
+  },
+  "scripts": {
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test"
+  },
+  "dependencies": {
+    "xml2json": "0.9.0",
+    "rx-lite": "4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.4.0",
+    "eslint-config-standard": "^6.0.0",
+    "eslint-plugin-promise": "^2.0.1",
+    "eslint-plugin-standard": "^2.0.0",
+    "vscode": "^0.11.0"
+  }
+}
