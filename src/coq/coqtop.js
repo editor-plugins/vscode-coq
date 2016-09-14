@@ -20,7 +20,7 @@ class Coqtop extends EventEmitter {
         'on'
       ]
       let options = {}
-      
+
       this.process = cp.spawn(pathToCoqtop, params, options)
 
       this.process.on('error', this.error)

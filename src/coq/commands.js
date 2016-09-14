@@ -1,9 +1,13 @@
 let CoqModel = require('./model')
-let vscode     = require('vscode')
+let vscode   = require('vscode')
 
 let model = null
 let outputChannel = vscode.window.createOutputChannel('Coq')
 let state = {}
+
+let proofDecorationType = vscode.window.createTextEditorDecorationType({
+  backgroundColor: 'rgba(114,213,114,0.3)'
+})
 
 let initialize = () => {
   if (!model) {
@@ -27,10 +31,10 @@ let next = () => {
         })
         outputChannel.appendLine(buf.join('\n'))
       } else {
-        outputChannel.appendLine(hypos.string)  
+        outputChannel.appendLine(hypos.string)
       }
     }
-    outputChannel.appendLine('-'.repeat(100))        
+    outputChannel.appendLine('-'.repeat(100))
     outputChannel.appendLine(subgoal[1])
   }
 
@@ -38,10 +42,24 @@ let next = () => {
     let newPosition = new vscode.Position(line + 1, 0)
     let newSelection = new vscode.Selection(newPosition, newPosition)
     editor.selection = newSelection
-    
+
     outputChannel.clear()
     outputChannel.show()
     state[line] = arg.stateId
+
+    let lines = Object.keys(state)
+    
+    editor.setDecorations(proofDecorationType, [])
+
+    let decorations = lines.map((line) => {
+      let l = parseInt(line)
+      let start = new vscode.Position(l, 0)
+      let end = new vscode.Position(l + 1, 0)
+      return {
+        range: new vscode.Range(start, end)
+      } 
+    })
+    editor.setDecorations(proofDecorationType, decorations)
 
     model.goals().subscribe((arg) => {
       if (arg.goal instanceof Array) {
@@ -52,7 +70,7 @@ let next = () => {
         for (var i = 1; i < arg.goal.length; i++){
           var subgoal = arg.goal[i]
           buf.push(`subgoal ${ i + 1 } (ID ${ subgoal.string[0] }) is:`)
-          buf.push(subgoal.string[1])
+          buf.push(` ${ subgoal.string[1] }`)
         }
         outputChannel.appendLine('')
         outputChannel.appendLine(buf.join('\n'))
