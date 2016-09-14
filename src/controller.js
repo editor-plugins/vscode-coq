@@ -3,7 +3,8 @@ let vscode   = require('vscode')
 
 let getCommands = () => {
   return [
-    ['coq.next', runCommand(commands.next)]
+    ['coq.next', runCommand(commands.next)],
+    ['coq.prev', runCommand(commands.prev)]
   ]
 }
 

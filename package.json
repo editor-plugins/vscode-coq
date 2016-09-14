@@ -52,11 +52,18 @@
     "commands": [{
       "command": "coq.next",
       "title": "Coq: next"
+    }, {
+      "command": "coq.prev",
+      "title": "Coq: prev"
     }],
     "keybindings": [{
       "key": "shift+ctrl+n",
       "mac": "shift+cmd+n",
       "command": "coq.next"
+    }, {
+      "key": "shift+ctrl+u",
+      "mac": "shift+cmd+u",
+      "command": "coq.prev"
     }],
     "snippets": [{
       "language": "coq",

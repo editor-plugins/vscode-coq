@@ -5,6 +5,7 @@ let Rx     = require('rx-lite')
 class CoqModel {
   constructor() {
     this.stateId = 1
+    this.uniqueId = 0
     this.coqtopRef = null
     this.subjects = {}
   }
@@ -24,40 +25,42 @@ class CoqModel {
 
   prepareCommand(cmd) {
     let subject = new Rx.Subject
-    this.subjects[this.stateId] = subject
+    this.uniqueId++
+    this.subjects[this.uniqueId] = subject
     this.coqtop().send(cmd)
     return subject
   }
 
   handleCommand(cmd) {
     console.log("cmd => " + JSON.stringify(cmd))
+    if (this.subjects[this.uniqueId] == null) return
+    let subject = this.subjects[this.uniqueId]
+
     if (cmd.coqtoproot.value) {
       if (cmd.coqtoproot.value.val == 'good') {
         if (cmd.coqtoproot.value.pair && cmd.coqtoproot.value.pair.state_id.val) {
           let newStateId = cmd.coqtoproot.value.pair.state_id.val
-          if (this.subjects[this.stateId] != null) {
-            let subject = this.subjects[this.stateId]
-            let oldStateId = this.stateId
-            this.stateId = newStateId
-            subject.onNext({
-              stateId: oldStateId
-            })
-          }
+          let oldStateId = this.stateId
+          this.stateId = newStateId
+          subject.onNext({
+            stateId: oldStateId
+          })
         } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.goals) {
-          if (this.subjects[this.stateId] != null) {
-            let subject = this.subjects[this.stateId]
-            subject.onNext({
-              goal: cmd.coqtoproot.value.option.goals.list[0].goal
-            })
-          }
+          subject.onNext({
+            goal: cmd.coqtoproot.value.option.goals.list[0].goal
+          })
+        } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.val == 'none') {
+          // Qed. => no more goals
+        } else {
+          subject.onNext()
         }
       } else {
-        if (this.subjects[this.stateId] != null) {
-          let subject = this.subjects[this.stateId]
-          subject.onError({
-            message: cmd.coqtoproot.feedback.feedback_content.string 
-          })
-        }
+        let msg = cmd.coqtoproot.feedback ?
+          cmd.coqtoproot.feedback.feedback_content.string :
+          "error"
+        subject.onError({
+          message: msg  
+        })
       }
     }
   }
@@ -71,6 +74,7 @@ class CoqModel {
   }
 
   editAt(stateId) {
+    this.stateId = stateId
     return this.prepareCommand(`<call val="Edit_at"><state_id val="${stateId}"/></call>`)
   }
 
