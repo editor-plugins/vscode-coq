@@ -1,6 +1,6 @@
 let Coqtop = require('./coqtop')
-let Rx     = require('rx-lite')
 let xml    = require('../xml')
+let Rx     = require('rx-lite')
 
 class CoqModel {
   constructor() {
@@ -17,7 +17,7 @@ class CoqModel {
     }
     return this.coqtopRef
   }
-  
+
   stop() {
     this.coqtopRef.stop()
   }
@@ -31,22 +31,24 @@ class CoqModel {
 
   handleCommand(cmd) {
     console.log("cmd => " + JSON.stringify(cmd))
-    if (cmd.coqtoproot.value.pair.state_id.val) {
-      let newStateId = cmd.coqtoproot.value.pair.state_id.val
-      if (this.subjects[this.stateId] != null) {
-        let subject = this.subjects[this.stateId]
-        let oldStateId = this.stateId
-        this.stateId = newStateId
-        subject.onNext({
-          stateId: oldStateId
-        })
-      }
-    } else if (cmd.coqtoproot.value.option.goals) {
-      if (this.subjects[this.stateId] != null) {
-        let subject = this.subjects[this.stateId]
-        subject.onNext({
-          goal: cmd.coqtoproot.value.option.goals.list[0].goal
-        })
+    if (cmd.coqtoproot.value) {
+      if (cmd.coqtoproot.value.pair && cmd.coqtoproot.value.pair.state_id.val) {
+        let newStateId = cmd.coqtoproot.value.pair.state_id.val
+        if (this.subjects[this.stateId] != null) {
+          let subject = this.subjects[this.stateId]
+          let oldStateId = this.stateId
+          this.stateId = newStateId
+          subject.onNext({
+            stateId: oldStateId
+          })
+        }
+      } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.goals) {
+        if (this.subjects[this.stateId] != null) {
+          let subject = this.subjects[this.stateId]
+          subject.onNext({
+            goal: cmd.coqtoproot.value.option.goals.list[0].goal
+          })
+        }
       }
     }
   }
@@ -56,7 +58,8 @@ class CoqModel {
   }
 
   add(cmd) {
-    return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd)}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="true"/></pair></pair></call>`)
+    console.log(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
+    return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
   }
 
   editAt(stateId) {
