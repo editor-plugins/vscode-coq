@@ -35,12 +35,15 @@ let next = () => {
   }
 
   let successHandler = (arg) => {
+    let newPosition = new vscode.Position(line + 1, 0)
+    let newSelection = new vscode.Selection(newPosition, newPosition)
+    editor.selection = newSelection
+    
     outputChannel.clear()
     outputChannel.show()
     state[line] = arg.stateId
 
     model.goals().subscribe((arg) => {
-      console.log("goal => " + JSON.stringify(arg.goal))      
       if (arg.goal instanceof Array) {
         let subgoal1 = arg.goal[0]
         outputChannel.appendLine(`${ arg.goal.length } subgoals, subgoal 1 (ID ${ subgoal1.string[0] })\n`)

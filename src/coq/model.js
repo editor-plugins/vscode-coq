@@ -67,7 +67,6 @@ class CoqModel {
   }
 
   add(cmd) {
-    console.log(`send command => <call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
     return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
   }
 
@@ -76,7 +75,6 @@ class CoqModel {
   }
 
   goals() {
-    console.log("send goal command")
     return this.prepareCommand('<call val="Goal"><unit/></call>')
   }
 }
