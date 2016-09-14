@@ -48,7 +48,7 @@ let next = () => {
     state[line] = arg.stateId
 
     let lines = Object.keys(state)
-    
+
     editor.setDecorations(proofDecorationType, [])
 
     let decorations = lines.map((line) => {
@@ -57,7 +57,7 @@ let next = () => {
       let end = new vscode.Position(l + 1, 0)
       return {
         range: new vscode.Range(start, end)
-      } 
+      }
     })
     editor.setDecorations(proofDecorationType, decorations)
 
@@ -128,7 +128,7 @@ let prev = () => {
     delete state[line - 1]
 
     let lines = Object.keys(state)
-    
+
     editor.setDecorations(proofDecorationType, [])
 
     let decorations = lines.map((line) => {
@@ -137,7 +137,7 @@ let prev = () => {
       let end = new vscode.Position(l + 1, 0)
       return {
         range: new vscode.Range(start, end)
-      } 
+      }
     })
     editor.setDecorations(proofDecorationType, decorations)
 

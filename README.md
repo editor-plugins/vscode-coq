@@ -10,3 +10,4 @@
 | command | shortcut |
 |---|---|
 | next | shift + cmd/ctrl + n |
+| prev | shift + cmd/ctrl + u |
