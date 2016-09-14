@@ -32,21 +32,30 @@ class CoqModel {
   handleCommand(cmd) {
     console.log("cmd => " + JSON.stringify(cmd))
     if (cmd.coqtoproot.value) {
-      if (cmd.coqtoproot.value.pair && cmd.coqtoproot.value.pair.state_id.val) {
-        let newStateId = cmd.coqtoproot.value.pair.state_id.val
-        if (this.subjects[this.stateId] != null) {
-          let subject = this.subjects[this.stateId]
-          let oldStateId = this.stateId
-          this.stateId = newStateId
-          subject.onNext({
-            stateId: oldStateId
-          })
+      if (cmd.coqtoproot.value.val == 'good') {
+        if (cmd.coqtoproot.value.pair && cmd.coqtoproot.value.pair.state_id.val) {
+          let newStateId = cmd.coqtoproot.value.pair.state_id.val
+          if (this.subjects[this.stateId] != null) {
+            let subject = this.subjects[this.stateId]
+            let oldStateId = this.stateId
+            this.stateId = newStateId
+            subject.onNext({
+              stateId: oldStateId
+            })
+          }
+        } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.goals) {
+          if (this.subjects[this.stateId] != null) {
+            let subject = this.subjects[this.stateId]
+            subject.onNext({
+              goal: cmd.coqtoproot.value.option.goals.list[0].goal
+            })
+          }
         }
-      } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.goals) {
+      } else {
         if (this.subjects[this.stateId] != null) {
           let subject = this.subjects[this.stateId]
-          subject.onNext({
-            goal: cmd.coqtoproot.value.option.goals.list[0].goal
+          subject.onError({
+            message: cmd.coqtoproot.feedback.feedback_content.string 
           })
         }
       }
@@ -58,7 +67,7 @@ class CoqModel {
   }
 
   add(cmd) {
-    console.log(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
+    console.log(`send command => <call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
     return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
   }
 
@@ -67,6 +76,7 @@ class CoqModel {
   }
 
   goals() {
+    console.log("send goal command")
     return this.prepareCommand('<call val="Goal"><unit/></call>')
   }
 }

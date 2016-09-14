@@ -11,14 +11,7 @@ let initialize = () => {
   }
 }
 
-let showLoading = () => {
-  outputChannel.clear()
-  outputChannel.show()
-  outputChannel.append("loading...")
-}
-
 let next = () => {
-  console.log("next!")
   let editor = vscode.window.activeTextEditor
   var line = editor.selection.active.line
   let cmd = editor.document.lineAt(line).text
@@ -45,7 +38,7 @@ let next = () => {
     outputChannel.clear()
     outputChannel.show()
     state[line] = arg.stateId
-    
+
     model.goals().subscribe((arg) => {
       console.log("goal => " + JSON.stringify(arg.goal))      
       if (arg.goal instanceof Array) {
@@ -73,7 +66,6 @@ let next = () => {
 
   new Promise((resolve, reject) => {
     model.add(cmd, line).subscribe(successHandler, displayErrors)
-    //showLoading()
     resolve()
   }).then(function () {
   }).catch(function () {
@@ -83,7 +75,7 @@ let next = () => {
 let displayErrors = (err) => {
   outputChannel.clear()
   outputChannel.show()
-  outputChannel.appendLine("error")
+  outputChannel.appendLine(err.message)
 }
 
 let destroy = () => {

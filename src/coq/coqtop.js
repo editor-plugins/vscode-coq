@@ -7,7 +7,6 @@ class Coqtop extends EventEmitter {
   constructor() {
     super()
     this.process = null
-    this.buffer = ''
   }
 
   start() {
@@ -66,8 +65,6 @@ class Coqtop extends EventEmitter {
   }
 
   stdout(data) {
-    console.log("data => " + data)
-    this.buffer += data
     let json = xml.parse(data.trim())
     this.emit('message', json)
   }
