@@ -43,6 +43,7 @@ class CoqModel {
           let newStateId = cmd.coqtoproot.value.pair.state_id.val
           let oldStateId = this.stateId
           this.stateId = newStateId
+          console.log("this stateId => " + this.stateId)
           subject.onNext({
             stateId: oldStateId,
             message: message
@@ -79,6 +80,7 @@ class CoqModel {
   }
 
   add(cmd) {
+    console.log(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
     return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
   }
 

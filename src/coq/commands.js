@@ -96,7 +96,7 @@ let successHandler = (arg, editor, newPosition) => {
         outputChannel.appendLine(buf.join('\n'))
       } else {
         if (arg.goal) {
-          outputChannel.appendLine(`1 subgoals, subgoal 1 (ID ${ arg.goal.string[0] })\n`)    
+          outputChannel.appendLine(`1 subgoals, subgoal 1 (ID ${ arg.goal.string[0] })\n`)
           displaySingleGoal(arg.goal)
         } else {
           outputChannel.appendLine('No more subgoals.')
@@ -121,7 +121,7 @@ let next = (editor, line) => {
   let handler = (arg) => {
     if (arg.stateId) {
       state[line] = arg.stateId
-      successHandler(arg, editor, newPosition)    
+      successHandler(arg, editor, newPosition)
     }
   }
 
@@ -146,7 +146,7 @@ let prev = (editor, line) => {
   let handler = (arg) => {
     delete state[line - 1]
     let newPosition = new vscode.Position(line - 1, 0)
-    successHandler(arg, editor, newPosition) 
+    successHandler(arg, editor, newPosition)
   }
 
   new Promise((resolve, reject) => {
@@ -159,8 +159,11 @@ let prev = (editor, line) => {
 
 let toCursor = (editor, line) => {
   let lines = Object.keys(state)
-  let min = Math.min.apply(null, lines)
-  let max = Math.max.apply(null, lines)
+  let min = lines.length != 0 ? Math.min.apply(null, lines) : 0
+  let max = lines.length != 0 ? Math.max.apply(null, lines) : 0
+
+  console.log("min => " + min)
+  console.log("max => " + max)
 
   if (line <= min) {
     state = {}
@@ -168,18 +171,49 @@ let toCursor = (editor, line) => {
     destroy()
     model = null
   } else if (line > max) {
+    var cmds = []
+    for (var l = max; l < line; l++) {
+      if (!editor.document.lineAt(l).isEmptyOrWhitespace) {
+        cmds.push([l, editor.document.lineAt(l).text])
+      }
+    }
+    console.log("cmds => " + cmds)
+
+    let handler = (line, arg) => {
+      if (arg.stateId) {
+        state[line] = arg.stateId
+        cmds = cmds.slice(1, cmds.length)
+        if (cmds.length == 1) {
+          next(editor, cmds[0][0])
+        } else {
+          sequence()
+        }
+      }
+    }
+
+    let sequence = () => {
+      let pair = cmds[0]
+      new Promise((resolve, reject) => {
+        model.add(pair[1]).subscribe((arg) => { handler(pair[0], arg) }, displayErrors)
+        resolve()
+      }).then(function () {
+      }).catch(function () {
+      })
+    }
+
+    sequence()
   } else {
     let reserveLines = _.takeWhile(lines, (elem) => { return elem <= line })
     let editLine = Math.max.apply(null, reserveLines)
     let deleteLines = _.dropWhile(lines, (elem) => { return elem <= line })
-    
+
     deleteLines.forEach((l) => {
-      delete state[l]  
+      delete state[l]
     })
-    
+
     let stateId = state[editLine]
-    delete state[editLine]      
-    
+    delete state[editLine]
+
     let handler = (arg) => {
       let newPosition = new vscode.Position(line, 0)
       successHandler(arg, editor, newPosition)
