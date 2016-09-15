@@ -145,7 +145,8 @@ let toCursor = (editor, line) => {
     model = null
   } else if (line > max) {
     var cmds = []
-    for (var l = max; l < line; l++) {
+    let start = max == 0 ? max : max + 1
+    for (var l = start; l < line; l++) {
       if (!editor.document.lineAt(l).isEmptyOrWhitespace) {
         cmds.push([l, editor.document.lineAt(l).text])
       }
@@ -165,12 +166,14 @@ let toCursor = (editor, line) => {
 
     let sequence = () => {
       let pair = cmds[0]
-      new Promise((resolve, reject) => {
-        model.add(pair[1]).subscribe((arg) => { handler(pair[0], arg) }, displayErrors)
-        resolve()
-      }).then(function () {
-      }).catch(function () {
-      })
+      if (pair) {
+        new Promise((resolve, reject) => {
+          model.add(pair[1]).subscribe((arg) => { handler(pair[0], arg) }, displayErrors)
+          resolve()
+        }).then(function () {
+        }).catch(function () {
+        })
+      }
     }
 
     sequence()
