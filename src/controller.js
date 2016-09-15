@@ -10,8 +10,11 @@ let getCommands = () => {
 
 let runCommand = (command) => {
   return (_) => {
+    let editor = vscode.window.activeTextEditor
+    let line = editor.selection.active.line
+  
     commands.initialize()
-    command()
+    command(editor, line)
   }
 }
 
