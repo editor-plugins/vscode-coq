@@ -55,6 +55,9 @@
     }, {
       "command": "coq.prev",
       "title": "Coq: prev"
+    }, {
+      "command": "coq.to-cursor",
+      "title": "Coq: to cursor"
     }],
     "keybindings": [{
       "key": "shift+ctrl+n",
@@ -64,6 +67,10 @@
       "key": "shift+ctrl+u",
       "mac": "shift+cmd+u",
       "command": "coq.prev"
+    }, {
+      "key": "shift+ctrl+enter",
+      "mac": "shift+cmd+enter",
+      "command": "coq.to-cursor"
     }],
     "snippets": [{
       "language": "coq",

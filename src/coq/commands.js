@@ -39,7 +39,7 @@ let successHandler = (arg, editor, newPosition) => {
 
   outputChannel.clear()
   outputChannel.show()
-  
+
   let lines = Object.keys(state)
 
   editor.setDecorations(proofDecorationType, [])
@@ -57,37 +57,39 @@ let successHandler = (arg, editor, newPosition) => {
   model.goals().subscribe((arg) => {
     outputChannel.clear()
     outputChannel.show()
-    if (arg.goal instanceof Array) {
-      let subgoal1 = arg.goal[0]
-      outputChannel.appendLine(`${ arg.goal.length } subgoals, subgoal 1 (ID ${ subgoal1.string[0] })\n`)
-      displaySingleGoal(subgoal1)
-      let buf = []
-      for (var i = 1; i < arg.goal.length; i++){
-        var subgoal = arg.goal[i]
-        buf.push(`subgoal ${ i + 1 } (ID ${ subgoal.string[0] }) is:`)
-        buf.push(` ${ subgoal.string[1] }`)
-      }
-      outputChannel.appendLine('')
-      outputChannel.appendLine(buf.join('\n'))
-    } else {
-      if (arg.goal) {
-        outputChannel.appendLine(`1 subgoals, subgoal 1 (ID ${ arg.goal.string[0] })\n`)    
-        displaySingleGoal(arg.goal)
+    if (arg.type == 'goal') {
+      if (arg.goal instanceof Array) {
+        let subgoal1 = arg.goal[0]
+        outputChannel.appendLine(`${ arg.goal.length } subgoals, subgoal 1 (ID ${ subgoal1.string[0] })\n`)
+        displaySingleGoal(subgoal1)
+        let buf = []
+        for (var i = 1; i < arg.goal.length; i++){
+          var subgoal = arg.goal[i]
+          buf.push(`subgoal ${ i + 1 } (ID ${ subgoal.string[0] }) is:`)
+          buf.push(` ${ subgoal.string[1] }`)
+        }
+        outputChannel.appendLine('')
+        outputChannel.appendLine(buf.join('\n'))
       } else {
-        outputChannel.appendLine('No more subgoals.')
+        if (arg.goal) {
+          outputChannel.appendLine(`1 subgoals, subgoal 1 (ID ${ arg.goal.string[0] })\n`)    
+          displaySingleGoal(arg.goal)
+        } else {
+          outputChannel.appendLine('No more subgoals.')
+        }
       }
+    }
+
+    if (arg.type == 'message') {
+      outputChannel.appendLine(arg.message)
     }
   }, displayErrors)
 }
 
 let next = (editor, line) => {
-  console.log("next!!!")
-  console.log("line => " + line)
   let cmd = editor.document.lineAt(line).text
-  console.log("cmd => " + cmd)
-
+  
   let handler = (arg) => {
-    console.log("callback!!!")
     state[line] = arg.stateId
     let newPosition = new vscode.Position(line + 1, 0)
     successHandler(arg, editor, newPosition)
@@ -120,6 +122,9 @@ let prev = (editor, line) => {
   }
 }
 
+let toCursor = (editor, line) => {
+}
+
 let displayErrors = (err) => {
   outputChannel.clear()
   outputChannel.show()
@@ -134,5 +139,6 @@ module.exports = {
   initialize,
   next,
   prev,
+  toCursor,
   destroy
 }

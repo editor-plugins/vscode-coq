@@ -36,7 +36,14 @@ class CoqModel {
     if (this.subjects[this.uniqueId] == null) return
     let subject = this.subjects[this.uniqueId]
 
-    if (cmd.coqtoproot.value) {
+    if (cmd.coqtoproot.message) {
+      if (cmd.coqtoproot.message.string) {
+        subject.onNext({
+          type: 'message',
+          message: cmd.coqtoproot.message.string
+        })
+      }
+    } else if (cmd.coqtoproot.value) {
       if (cmd.coqtoproot.value.val == 'good') {
         if (cmd.coqtoproot.value.pair && cmd.coqtoproot.value.pair.state_id.val) {
           let newStateId = cmd.coqtoproot.value.pair.state_id.val
@@ -47,6 +54,7 @@ class CoqModel {
           })
         } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.goals) {
           subject.onNext({
+            type: 'goal',
             goal: cmd.coqtoproot.value.option.goals.list[0].goal
           })
         } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.val == 'none') {
