@@ -1,8 +1,30 @@
 let CoqModel = require('./model')
 let vscode   = require('vscode')
+let _        = require('underscore')
+
+function countWhile(obj, iterator, context) {
+  if (obj == null) return undefined
+  var count = 0
+  _.every(obj, function(value, index, list) {
+    return iterator.call(context, value, index, list) && (++count)
+  })
+  return count
+}
+
+_.mixin({
+  takeWhile: function(obj, iterator, context) {
+    if (obj == null) return []
+    return _.take(obj, countWhile(obj, iterator, context))
+  },
+
+  dropWhile: function(obj, iterator, context) {
+    if (obj == null) return []
+    return _.drop(obj, obj.length - countWhile(obj, iterator, context) + 1)
+  }
+})
 
 let model = null
-let outputChannel = vscode.window.createOutputChannel('Coq goals')
+let outputChannel = vscode.window.createOutputChannel('Coq')
 let state = {}
 
 let proofDecorationType = vscode.window.createTextEditorDecorationType({
@@ -33,17 +55,8 @@ let displaySingleGoal = (goal) => {
   outputChannel.appendLine(subgoal[1])
 }
 
-let successHandler = (arg, editor, newPosition) => {
-  let newSelection = new vscode.Selection(newPosition, newPosition)
-  editor.selection = newSelection
-
-  outputChannel.clear()
-  outputChannel.show()
-
-  let lines = Object.keys(state)
-
+let addProofDecoration = (editor, lines) => {
   editor.setDecorations(proofDecorationType, [])
-
   let decorations = lines.map((line) => {
     let l = parseInt(line)
     let start = new vscode.Position(l, 0)
@@ -53,7 +66,18 @@ let successHandler = (arg, editor, newPosition) => {
     }
   })
   editor.setDecorations(proofDecorationType, decorations)
+}
 
+let successHandler = (arg, editor, newPosition) => {
+  let newSelection = new vscode.Selection(newPosition, newPosition)
+  editor.selection = newSelection
+
+  outputChannel.clear()
+  outputChannel.show()
+
+  let lines = Object.keys(state)
+  addProofDecoration(editor, lines)
+  
   model.goals().subscribe((arg) => {
     outputChannel.clear()
     outputChannel.show()
@@ -93,7 +117,7 @@ let next = (editor, line) => {
     return
   }
   let cmd = editor.document.lineAt(line).text
-  
+
   let handler = (arg) => {
     if (arg.stateId) {
       state[line] = arg.stateId
@@ -118,7 +142,7 @@ let prev = (editor, line) => {
     editor.selection = newSelection
     return
   }
-  
+
   let handler = (arg) => {
     delete state[line - 1]
     let newPosition = new vscode.Position(line - 1, 0)
@@ -134,6 +158,40 @@ let prev = (editor, line) => {
 }
 
 let toCursor = (editor, line) => {
+  let lines = Object.keys(state)
+  let min = Math.min.apply(null, lines)
+  let max = Math.max.apply(null, lines)
+
+  if (line <= min) {
+    state = {}
+    editor.setDecorations(proofDecorationType, [])
+    destroy()
+    model = null
+  } else if (line > max) {
+  } else {
+    let reserveLines = _.takeWhile(lines, (elem) => { return elem <= line })
+    let editLine = Math.max.apply(null, reserveLines)
+    let deleteLines = _.dropWhile(lines, (elem) => { return elem <= line })
+    
+    deleteLines.forEach((l) => {
+      delete state[l]  
+    })
+    
+    let stateId = state[editLine]
+    delete state[editLine]      
+    
+    let handler = (arg) => {
+      let newPosition = new vscode.Position(line, 0)
+      successHandler(arg, editor, newPosition)
+    }
+
+    new Promise((resolve, reject) => {
+      model.editAt(stateId).subscribe(handler, displayErrors)
+      resolve()
+    }).then(function () {
+    }).catch(function () {
+    })
+  }
 }
 
 let displayErrors = (err) => {
