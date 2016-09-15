@@ -36,38 +36,41 @@ class CoqModel {
     if (this.subjects[this.uniqueId] == null) return
     let subject = this.subjects[this.uniqueId]
 
-    if (cmd.coqtoproot.message) {
-      if (cmd.coqtoproot.message.string) {
-        subject.onNext({
-          type: 'message',
-          message: cmd.coqtoproot.message.string
-        })
-      }
-    } else if (cmd.coqtoproot.value) {
+    if (cmd.coqtoproot.value) {
       if (cmd.coqtoproot.value.val == 'good') {
+        let message = cmd.coqtoproot.message ? cmd.coqtoproot.message.string : null 
         if (cmd.coqtoproot.value.pair && cmd.coqtoproot.value.pair.state_id.val) {
           let newStateId = cmd.coqtoproot.value.pair.state_id.val
           let oldStateId = this.stateId
           this.stateId = newStateId
           subject.onNext({
-            stateId: oldStateId
+            stateId: oldStateId,
+            message: message
           })
         } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.goals) {
           subject.onNext({
-            type: 'goal',
-            goal: cmd.coqtoproot.value.option.goals.list[0].goal
+            goal: cmd.coqtoproot.value.option.goals.list[0].goal,
+            message: message
           })
-        } else if (cmd.coqtoproot.value.option && cmd.coqtoproot.value.option.val == 'none') {
-          // Qed. => no more goals
         } else {
-          subject.onNext()
+          subject.onNext({
+            message: message
+          })
         }
       } else {
         let msg = cmd.coqtoproot.feedback ?
           cmd.coqtoproot.feedback.feedback_content.string :
           "error"
         subject.onError({
-          message: msg  
+          message: msg
+        })
+      }
+    } else if (cmd.coqtoproot.message) {
+      console.log("message!!!")
+      if (cmd.coqtoproot.message.string) {
+        console.log("inner message!!!")        
+        subject.onNext({
+          message: cmd.coqtoproot.message.string
         })
       }
     }
@@ -78,6 +81,7 @@ class CoqModel {
   }
 
   add(cmd) {
+    console.log(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
     return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
   }
 
