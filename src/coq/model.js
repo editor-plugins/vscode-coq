@@ -38,7 +38,9 @@ class CoqModel {
 
     if (cmd.coqtoproot.value) {
       if (cmd.coqtoproot.value.val == 'good') {
-        let message = cmd.coqtoproot.message ? cmd.coqtoproot.message.string : null 
+        let message = cmd.coqtoproot.message && cmd.coqtoproot.message.string
+          ? cmd.coqtoproot.message.string
+          : null 
         if (cmd.coqtoproot.value.pair && cmd.coqtoproot.value.pair.state_id.val) {
           let newStateId = cmd.coqtoproot.value.pair.state_id.val
           let oldStateId = this.stateId
@@ -59,7 +61,7 @@ class CoqModel {
           })
         }
       } else {
-        let msg = cmd.coqtoproot.feedback ?
+        let msg = cmd.coqtoproot.feedback && cmd.coqtoproot.feedback.feedback_content && cmd.coqtoproot.feedback.feedback_content.string ?
           cmd.coqtoproot.feedback.feedback_content.string :
           "error"
         subject.onError({

@@ -1,27 +1,6 @@
 let CoqModel = require('./model')
 let vscode   = require('vscode')
-let _        = require('underscore')
-
-function countWhile(obj, iterator, context) {
-  if (obj == null) return undefined
-  var count = 0
-  _.every(obj, function(value, index, list) {
-    return iterator.call(context, value, index, list) && (++count)
-  })
-  return count
-}
-
-_.mixin({
-  takeWhile: function(obj, iterator, context) {
-    if (obj == null) return []
-    return _.take(obj, countWhile(obj, iterator, context))
-  },
-
-  dropWhile: function(obj, iterator, context) {
-    if (obj == null) return []
-    return _.drop(obj, obj.length - countWhile(obj, iterator, context) + 1)
-  }
-})
+let _        = require('lodash')
 
 let model = null
 let outputChannel = vscode.window.createOutputChannel('Coq')
@@ -134,18 +113,15 @@ let next = (editor, line) => {
 }
 
 let prev = (editor, line) => {
-  let newPosition = new vscode.Position(line - 1, 0)
-  let stateId = state[line - 1]
+  let lines = Object.keys(state) 
+  if (lines.length == 0) return
+  let max = lines.length != 0 ? Math.max.apply(null, lines) : 0
 
-  if (editor.document.lineAt(line - 1).isEmptyOrWhitespace || !stateId) {
-    let newSelection = new vscode.Selection(newPosition, newPosition)
-    editor.selection = newSelection
-    return
-  }
+  let stateId = state[max]
 
   let handler = (arg) => {
-    delete state[line - 1]
-    let newPosition = new vscode.Position(line - 1, 0)
+    delete state[max]
+    let newPosition = new vscode.Position(max, 0)
     successHandler(arg, editor, newPosition)
   }
 
@@ -158,6 +134,7 @@ let prev = (editor, line) => {
 }
 
 let toCursor = (editor, line) => {
+  console.log("to cursor => " + line)
   let lines = Object.keys(state)
   let min = lines.length != 0 ? Math.min.apply(null, lines) : 0
   let max = lines.length != 0 ? Math.max.apply(null, lines) : 0
@@ -203,9 +180,15 @@ let toCursor = (editor, line) => {
 
     sequence()
   } else {
+    console.log("state => " + JSON.stringify(state))
+    console.log("lines => " + lines)
+    
     let reserveLines = _.takeWhile(lines, (elem) => { return elem <= line })
     let editLine = Math.max.apply(null, reserveLines)
     let deleteLines = _.dropWhile(lines, (elem) => { return elem <= line })
+
+    console.log("reserveLines => " + reserveLines)
+    console.log("deleteLines => " + deleteLines)
 
     deleteLines.forEach((l) => {
       delete state[l]
@@ -213,6 +196,8 @@ let toCursor = (editor, line) => {
 
     let stateId = state[editLine]
     delete state[editLine]
+
+    console.log("state => " + JSON.stringify(state))
 
     let handler = (arg) => {
       let newPosition = new vscode.Position(line, 0)
