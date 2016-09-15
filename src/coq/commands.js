@@ -56,7 +56,7 @@ let successHandler = (arg, editor, newPosition) => {
 
   let lines = Object.keys(state)
   addProofDecoration(editor, lines)
-  
+
   model.goals().subscribe((arg) => {
     outputChannel.clear()
     outputChannel.show()
@@ -134,13 +134,9 @@ let prev = (editor, line) => {
 }
 
 let toCursor = (editor, line) => {
-  console.log("to cursor => " + line)
   let lines = Object.keys(state)
   let min = lines.length != 0 ? Math.min.apply(null, lines) : 0
   let max = lines.length != 0 ? Math.max.apply(null, lines) : 0
-
-  console.log("min => " + min)
-  console.log("max => " + max)
 
   if (line <= min) {
     state = {}
@@ -154,7 +150,6 @@ let toCursor = (editor, line) => {
         cmds.push([l, editor.document.lineAt(l).text])
       }
     }
-    console.log("cmds => " + cmds)
 
     let handler = (line, arg) => {
       if (arg.stateId) {
@@ -180,15 +175,9 @@ let toCursor = (editor, line) => {
 
     sequence()
   } else {
-    console.log("state => " + JSON.stringify(state))
-    console.log("lines => " + lines)
-    
     let reserveLines = _.takeWhile(lines, (elem) => { return elem <= line })
     let editLine = Math.max.apply(null, reserveLines)
     let deleteLines = _.dropWhile(lines, (elem) => { return elem <= line })
-
-    console.log("reserveLines => " + reserveLines)
-    console.log("deleteLines => " + deleteLines)
 
     deleteLines.forEach((l) => {
       delete state[l]
@@ -196,8 +185,6 @@ let toCursor = (editor, line) => {
 
     let stateId = state[editLine]
     delete state[editLine]
-
-    console.log("state => " + JSON.stringify(state))
 
     let handler = (arg) => {
       let newPosition = new vscode.Position(line, 0)
