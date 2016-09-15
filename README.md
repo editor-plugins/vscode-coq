@@ -11,3 +11,4 @@
 |---|---|
 | next | shift + cmd/ctrl + n |
 | prev | shift + cmd/ctrl + u |
+| to cursor | shift + cmd/ctrl + enter |

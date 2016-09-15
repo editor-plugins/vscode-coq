@@ -9,3 +9,9 @@
 `(shift + cmd/ctrl + u)`
 
 ![prev](./images/screenshots/prev.gif)
+
+### CoqToCursor
+
+`(shift + cmd/ctrl + enter)`
+
+![tocursor](./images/screenshots/tocursor.gif)
