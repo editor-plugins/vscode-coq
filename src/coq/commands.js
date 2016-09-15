@@ -2,8 +2,7 @@ let CoqModel = require('./model')
 let vscode   = require('vscode')
 
 let model = null
-let goalsChannel = vscode.window.createOutputChannel('Coq goals')
-let messageChannel = vscode.window.createOutputChannel('Coq message')
+let outputChannel = vscode.window.createOutputChannel('Coq goals')
 let state = {}
 
 let proofDecorationType = vscode.window.createTextEditorDecorationType({
@@ -25,28 +24,23 @@ let displaySingleGoal = (goal) => {
       hypos.string.forEach((h) => {
         buf.push(h)
       })
-      goalsChannel.appendLine(buf.join('\n'))
+      outputChannel.appendLine(buf.join('\n'))
     } else {
-      goalsChannel.appendLine(hypos.string)
+      outputChannel.appendLine(hypos.string)
     }
   }
-  goalsChannel.appendLine('-'.repeat(100))
-  goalsChannel.appendLine(subgoal[1])
+  outputChannel.appendLine('-'.repeat(100))
+  outputChannel.appendLine(subgoal[1])
 }
 
 let successHandler = (arg, editor, newPosition) => {
   let newSelection = new vscode.Selection(newPosition, newPosition)
   editor.selection = newSelection
 
-  goalsChannel.clear()
-  goalsChannel.show()
+  outputChannel.clear()
+  outputChannel.show()
 
   let lines = Object.keys(state)
-
-  console.log("state => " + JSON.stringify(state))
-  console.log(state[244])
-  console.log("lines => " + lines)
-  console.log("state => " + JSON.stringify(state))  
 
   editor.setDecorations(proofDecorationType, [])
 
@@ -61,12 +55,12 @@ let successHandler = (arg, editor, newPosition) => {
   editor.setDecorations(proofDecorationType, decorations)
 
   model.goals().subscribe((arg) => {
-    goalsChannel.clear()
-    goalsChannel.show()
+    outputChannel.clear()
+    outputChannel.show()
     if (!arg.message) {
       if (arg.goal instanceof Array) {
         let subgoal1 = arg.goal[0]
-        goalsChannel.appendLine(`${ arg.goal.length } subgoals, subgoal 1 (ID ${ subgoal1.string[0] })\n`)
+        outputChannel.appendLine(`${ arg.goal.length } subgoals, subgoal 1 (ID ${ subgoal1.string[0] })\n`)
         displaySingleGoal(subgoal1)
         let buf = []
         for (var i = 1; i < arg.goal.length; i++){
@@ -74,18 +68,18 @@ let successHandler = (arg, editor, newPosition) => {
           buf.push(`subgoal ${ i + 1 } (ID ${ subgoal.string[0] }) is:`)
           buf.push(` ${ subgoal.string[1] }`)
         }
-        goalsChannel.appendLine('')
-        goalsChannel.appendLine(buf.join('\n'))
+        outputChannel.appendLine('')
+        outputChannel.appendLine(buf.join('\n'))
       } else {
         if (arg.goal) {
-          goalsChannel.appendLine(`1 subgoals, subgoal 1 (ID ${ arg.goal.string[0] })\n`)    
+          outputChannel.appendLine(`1 subgoals, subgoal 1 (ID ${ arg.goal.string[0] })\n`)    
           displaySingleGoal(arg.goal)
         } else {
-          goalsChannel.appendLine('No more subgoals.')
+          outputChannel.appendLine('No more subgoals.')
         }
       }
     } else {
-      goalsChannel.appendLine(arg.message)
+      outputChannel.appendLine(arg.message)
     }
   }, displayErrors)
 }
@@ -119,9 +113,6 @@ let prev = (editor, line) => {
   let newPosition = new vscode.Position(line - 1, 0)
   let stateId = state[line - 1]
 
-  console.log("state => " + JSON.stringify(state))
-  console.log("stateId => " + stateId)
-
   if (editor.document.lineAt(line - 1).isEmptyOrWhitespace || !stateId) {
     let newSelection = new vscode.Selection(newPosition, newPosition)
     editor.selection = newSelection
@@ -146,9 +137,9 @@ let toCursor = (editor, line) => {
 }
 
 let displayErrors = (err) => {
-  goalsChannel.clear()
-  goalsChannel.show()
-  goalsChannel.appendLine(err.message)
+  outputChannel.clear()
+  outputChannel.show()
+  outputChannel.appendLine(err.message)
 }
 
 let destroy = () => {

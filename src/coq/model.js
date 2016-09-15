@@ -66,9 +66,7 @@ class CoqModel {
         })
       }
     } else if (cmd.coqtoproot.message) {
-      console.log("message!!!")
       if (cmd.coqtoproot.message.string) {
-        console.log("inner message!!!")        
         subject.onNext({
           message: cmd.coqtoproot.message.string
         })
@@ -81,7 +79,6 @@ class CoqModel {
   }
 
   add(cmd) {
-    console.log(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
     return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
   }
 
