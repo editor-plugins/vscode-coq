@@ -32,7 +32,7 @@ class CoqModel {
   }
 
   handleCommand(cmd) {
-    console.log("cmd => " + JSON.stringify(cmd))
+    //console.log("cmd => " + JSON.stringify(cmd))
     if (this.subjects[this.uniqueId] == null) return
     let subject = this.subjects[this.uniqueId]
 
