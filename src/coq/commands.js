@@ -148,17 +148,13 @@ let toCursor = (editor, line) => {
   } else if (line > max) {
     var cmds = []
     let start = max == 0 ? max : max + 1
-    console.log("state => " + JSON.stringify(state))
-    console.log("start => " + start)
     for (var l = start; l < line; l++) {
       if (!editor.document.lineAt(l).isEmptyOrWhitespace) {
         cmds.push([l, editor.document.lineAt(l).text])
       }
     }
-    console.log("cmds => " + cmds)
-
+    
     let handler = (line, arg) => {
-      console.log("status id => " + arg.stateId)
       if (arg.stateId) {
         state[line] = arg.stateId
         cmds = cmds.slice(1, cmds.length)
@@ -175,7 +171,6 @@ let toCursor = (editor, line) => {
     let sequence = () => {
       let pair = cmds[0]
       if (pair) {
-        console.log("hahahaha")
         new Promise((resolve, reject) => {
           model.add(pair[1]).subscribe((arg) => { handler(pair[0], arg) }, displayErrors)
           resolve()

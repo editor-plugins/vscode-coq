@@ -17,7 +17,10 @@ let trans = (s) => {
 }
 
 let parse = (s) => {
-  return JSON.parse(parser.toJson(trans(s)).replace(/&apos;/g, '\'').replace(/&#40;/g, '(').replace(/&#41;/g, ')'))
+  return JSON.parse(parser.toJson(trans(s))
+             .replace(/&apos;/g, '\'')
+             .replace(/&#40;/g, '(')
+             .replace(/&#41;/g, ')'))
 }
 
 module.exports = {
