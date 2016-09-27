@@ -12,3 +12,7 @@
 | next | shift + cmd/ctrl + n |
 | prev | shift + cmd/ctrl + u |
 | to cursor | shift + cmd/ctrl + enter |
+
+## Acknowledgements
+
+* Grammar file is taken from [vscoq](https://github.com/siegebell/vscoq).
