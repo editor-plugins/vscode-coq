@@ -65,7 +65,7 @@ class Coqtop extends EventEmitter {
   }
 
   stdout(data) {
-    let json = xml.parse(data.trim())
+    let json = xml.parse(data)
     this.emit('message', json)
   }
 }

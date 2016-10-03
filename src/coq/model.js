@@ -80,7 +80,7 @@ class CoqModel {
   }
 
   add(cmd) {
-    return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="false"/></pair></pair></call>`)
+    return this.prepareCommand(`<call val="Add"><pair><pair><string>${xml.escapeXml(cmd.trim())}</string><int>-1</int></pair><pair><state_id val="${this.stateId}"/><bool val="true">True</bool></pair></pair></call>`)
   }
 
   editAt(stateId) {
