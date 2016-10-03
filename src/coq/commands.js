@@ -92,12 +92,13 @@ let successHandler = (arg, editor, newPosition) => {
 let next = (editor, line) => {
   let newPosition = new vscode.Position(line + 1, 0)
 
-  if (editor.document.lineAt(line).isEmptyOrWhitespace) {
+  let lineContent = editor.document.lineAt(line)
+  let cmd = lineContent.text
+  if (lineContent.isEmptyOrWhitespace || (cmd.trim().startsWith("(*") && cmd.trim().endsWith("*)"))) {
     let newSelection = new vscode.Selection(newPosition, newPosition)
     editor.selection = newSelection
     return
   }
-  let cmd = editor.document.lineAt(line).text
 
   let handler = (arg) => {
     if (arg.stateId) {
