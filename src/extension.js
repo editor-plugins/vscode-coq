@@ -2,6 +2,7 @@ let vscode     = require('vscode')
 let controller = require('./controller')
 
 function activate(context) {
+  controller.initialize()
   controller.getCommands().forEach(([key, value]) => {
     let disposable = vscode.commands.registerCommand(key, value)
     context.subscriptions.push(disposable)

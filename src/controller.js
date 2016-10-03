@@ -14,12 +14,12 @@ let runCommand = (command) => {
     let editor = vscode.window.activeTextEditor
     let line = editor.selection.active.line
   
-    commands.initialize()
     command(editor, line)
   }
 }
 
 module.exports = {
   getCommands,
+  initialize : commands.initialize,
   destroy: commands.destroy
 }

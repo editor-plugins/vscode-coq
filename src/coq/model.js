@@ -4,10 +4,11 @@ let Rx     = require('rx-lite')
 
 class CoqModel {
   constructor() {
-    this.stateId = 1
+    this.stateId = null
     this.uniqueId = 0
     this.coqtopRef = null
     this.subjects = {}
+    this.coqtop()
   }
 
   coqtop() {
@@ -15,6 +16,7 @@ class CoqModel {
       this.coqtopRef = new Coqtop()
       this.coqtopRef.on('message', (obj) => { this.handleCommand(obj) })
       this.coqtopRef.start()
+      this.init()
     }
     return this.coqtopRef
   }
@@ -32,6 +34,11 @@ class CoqModel {
   }
 
   handleCommand(cmd) {
+    if (this.stateId == null && cmd.coqtoproot.value && cmd.coqtoproot.value.val == 'good' && cmd.coqtoproot.value.state_id) {
+      this.stateId = cmd.coqtoproot.value.state_id.val
+      return
+    }
+
     if (this.subjects[this.uniqueId] == null) return
     let subject = this.subjects[this.uniqueId]
 
@@ -76,7 +83,7 @@ class CoqModel {
   }
 
   init() {
-    return this.prepareCommand('<call val="Init"><option val="none"/></call>')
+    return this.coqtop().send('<call val="Init"><option val="none"/></call>')
   }
 
   add(cmd) {
