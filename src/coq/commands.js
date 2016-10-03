@@ -89,12 +89,16 @@ let successHandler = (arg, editor, newPosition) => {
   }, displayErrors)
 }
 
+let isSingleLineComment = (cmd) => {
+  return cmd.trim().startsWith("(*") && cmd.trim().endsWith("*)")
+}
+
 let next = (editor, line) => {
   let newPosition = new vscode.Position(line + 1, 0)
 
   let lineContent = editor.document.lineAt(line)
   let cmd = lineContent.text
-  if (lineContent.isEmptyOrWhitespace || (cmd.trim().startsWith("(*") && cmd.trim().endsWith("*)"))) {
+  if (lineContent.isEmptyOrWhitespace || isSingleLineComment(cmd)) {
     let newSelection = new vscode.Selection(newPosition, newPosition)
     editor.selection = newSelection
     return
@@ -150,8 +154,10 @@ let toCursor = (editor, line) => {
     var cmds = []
     let start = max == 0 ? max : max + 1
     for (var l = start; l < line; l++) {
-      if (!editor.document.lineAt(l).isEmptyOrWhitespace) {
-        cmds.push([l, editor.document.lineAt(l).text])
+      let lineContent = editor.document.lineAt(l)
+      let cmd = lineContent.text
+      if (!(lineContent.isEmptyOrWhitespace || isSingleLineComment(cmd))) {
+        cmds.push([l, cmd])
       }
     }
     
