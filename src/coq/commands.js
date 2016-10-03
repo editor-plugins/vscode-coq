@@ -5,6 +5,7 @@ let _        = require('lodash')
 let model = null
 let outputChannel = vscode.window.createOutputChannel('Coq')
 let state = {}
+let comment = {}
 
 let proofDecorationType = vscode.window.createTextEditorDecorationType({
   backgroundColor: 'rgba(114,213,114,0.3)'
@@ -55,9 +56,8 @@ let successHandler = (arg, editor, newPosition) => {
   
   outputChannel.clear()
   outputChannel.show()
-
-  let lines = Object.keys(state)
-  addProofDecoration(editor, lines)
+  
+  addProofDecoration(editor, _.concat(Object.keys(state), Object.keys(comment)))
 
   model.goals().subscribe((arg) => {
     outputChannel.clear()
@@ -101,6 +101,10 @@ let next = (editor, line) => {
   if (lineContent.isEmptyOrWhitespace || isSingleLineComment(cmd)) {
     let newSelection = new vscode.Selection(newPosition, newPosition)
     editor.selection = newSelection
+    if (isSingleLineComment(cmd)) {
+      comment[line] = line
+      addProofDecoration(editor, _.concat(Object.keys(state), Object.keys(comment)))
+    }
     return
   }
 
@@ -120,6 +124,8 @@ let next = (editor, line) => {
 }
 
 let prev = (editor, line) => {
+  delete comment[line - 1]
+
   let lines = Object.keys(state) 
   if (lines.length == 0) return
   let max = lines.length != 0 ? Math.max.apply(null, lines) : 0
