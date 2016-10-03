@@ -148,6 +148,7 @@ let prev = (editor, line) => {
 
 let toCursor = (editor, line) => {
   let lines = Object.keys(state)
+  let commentLines = Object.keys(comment)
   let min = lines.length != 0 ? Math.min.apply(null, lines) : 0
   let max = lines.length != 0 ? Math.max.apply(null, lines) : 0
 
@@ -162,6 +163,9 @@ let toCursor = (editor, line) => {
     for (var l = start; l < line; l++) {
       let lineContent = editor.document.lineAt(l)
       let cmd = lineContent.text
+      if (isSingleLineComment(cmd)) {
+        comment[l] = l
+      }
       if (!(lineContent.isEmptyOrWhitespace || isSingleLineComment(cmd))) {
         cmds.push([l, cmd])
       }
@@ -199,8 +203,14 @@ let toCursor = (editor, line) => {
     let editLine = Math.max.apply(null, reserveLines)
     let deleteLines = _.dropWhile(lines, (elem) => { return elem <= line })
 
+    let deleteCommentLines = _.dropWhile(commentLines, (elem) => { return elem <= line })
+
     deleteLines.forEach((l) => {
       delete state[l]
+    })
+
+    deleteCommentLines.forEach((l) => {
+      delete comment[l]
     })
 
     let stateId = state[editLine]
