@@ -57,7 +57,7 @@ let successHandler = (arg, editor, newPosition) => {
   outputChannel.clear()
   outputChannel.show()
   
-  addProofDecoration(editor, _.concat(Object.keys(state), Object.keys(comment)))
+  addProofDecoration(editor, _.union(Object.keys(state), Object.keys(comment)))
 
   model.goals().subscribe((arg) => {
     outputChannel.clear()
@@ -93,7 +93,29 @@ let isSingleLineComment = (cmd) => {
   return cmd.trim().startsWith("(*") && cmd.trim().endsWith("*)")
 }
 
+let skipNextMultilineComment = (editor, line) => {
+  var l = line
+  var c = editor.document.lineAt(l).text
+  if (c.indexOf("(*") > -1) { 
+    while (c.indexOf("*)") == -1) {
+      comment[l] = l
+      l ++
+      c = editor.document.lineAt(l).text 
+    }
+    comment[l] = l
+  }
+  return l
+}
+
 let next = (editor, line) => {
+  let l = skipNextMultilineComment(editor, line) 
+  if (l > line) {
+    let newPosition = new vscode.Position(l + 1, 0)
+    let newSelection = new vscode.Selection(newPosition, newPosition)
+    editor.selection = newSelection
+    addProofDecoration(editor, _.union(Object.keys(state), Object.keys(comment)))
+    return
+  }
   let newPosition = new vscode.Position(line + 1, 0)
 
   let lineContent = editor.document.lineAt(line)
@@ -103,7 +125,7 @@ let next = (editor, line) => {
     editor.selection = newSelection
     if (isSingleLineComment(cmd)) {
       comment[line] = line
-      addProofDecoration(editor, _.concat(Object.keys(state), Object.keys(comment)))
+      addProofDecoration(editor, _.union(Object.keys(state), Object.keys(comment)))
     }
     return
   }
@@ -124,8 +146,6 @@ let next = (editor, line) => {
 }
 
 let prev = (editor, line) => {
-  delete comment[line - 1]
-
   let lines = Object.keys(state) 
   if (lines.length == 0) return
   let max = lines.length != 0 ? Math.max.apply(null, lines) : 0
@@ -134,6 +154,10 @@ let prev = (editor, line) => {
 
   let handler = (arg) => {
     delete state[max]
+    for (var l = max; l < line; l++) {
+      delete comment[l]  
+    }
+    
     let newPosition = new vscode.Position(max, 0)
     successHandler(arg, editor, newPosition)
   }
@@ -155,8 +179,6 @@ let toCursor = (editor, line) => {
   if (line <= min) {
     state = {}
     editor.setDecorations(proofDecorationType, [])
-    destroy()
-    model = null
   } else if (line > max) {
     var cmds = []
     let start = max == 0 ? max : max + 1
