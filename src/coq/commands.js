@@ -96,7 +96,7 @@ let isSingleLineComment = (cmd) => {
 let skipNextMultilineComment = (editor, line) => {
   var l = line
   var c = editor.document.lineAt(l).text
-  if (c.indexOf("(*") > -1) { 
+  if (c.indexOf("(*") > -1) {
     while (c.indexOf("*)") == -1) {
       comment[l] = l
       l ++
@@ -146,7 +146,7 @@ let next = (editor, line) => {
 }
 
 let prev = (editor, line) => {
-  let lines = Object.keys(state) 
+  let lines = Object.keys(state)
   if (lines.length == 0) return
   let max = lines.length != 0 ? Math.max.apply(null, lines) : 0
 
@@ -155,9 +155,9 @@ let prev = (editor, line) => {
   let handler = (arg) => {
     delete state[max]
     for (var l = max; l < line; l++) {
-      delete comment[l]  
+      delete comment[l]
     }
-    
+
     let newPosition = new vscode.Position(max, 0)
     successHandler(arg, editor, newPosition)
   }
@@ -183,22 +183,32 @@ let toCursor = (editor, line) => {
     var cmds = []
     let start = max == 0 ? max : max + 1
     for (var l = start; l < line; l++) {
-      let lineContent = editor.document.lineAt(l)
-      let cmd = lineContent.text
-      if (isSingleLineComment(cmd)) {
-        comment[l] = l
-      }
-      if (!(lineContent.isEmptyOrWhitespace || isSingleLineComment(cmd))) {
-        cmds.push([l, cmd])
+      let nextL = skipNextMultilineComment(editor, l)
+      if (nextL > l) {
+        let newPosition = new vscode.Position(nextL + 1, 0)
+        let newSelection = new vscode.Selection(newPosition, newPosition)
+        editor.selection = newSelection
+        addProofDecoration(editor, _.union(Object.keys(state), Object.keys(comment)))
+        l = nextL
+      } else {
+        let lineContent = editor.document.lineAt(l)
+        let cmd = lineContent.text
+        if (isSingleLineComment(cmd)) {
+          comment[l] = l
+        }
+        if (!(lineContent.isEmptyOrWhitespace || isSingleLineComment(cmd))) {
+          cmds.push([l, cmd])
+        }
       }
     }
-    
+
     let handler = (line, arg) => {
       if (arg.stateId) {
         state[line] = arg.stateId
         cmds = cmds.slice(1, cmds.length)
         if (cmds.length == 0) {
-          successHandler(arg, editor, null)
+          let newPosition = new vscode.Position(line + 1, 0)
+          successHandler(arg, editor, newPosition)
         } else if (cmds.length == 1) {
           next(editor, cmds[0][0])
         } else {
