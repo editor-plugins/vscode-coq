@@ -12,6 +12,8 @@ let getCommands = () => {
 let runCommand = (command) => {
   return (_) => {
     let editor = vscode.window.activeTextEditor
+    let document = editor.document
+    if (document.languageId != 'coq') return
     let line = editor.selection.active.line
   
     command(editor, line)
